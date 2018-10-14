@@ -41,6 +41,7 @@ function led_menu {
 			1) turn_led_on $1;;
 			2) turn_led_off $1;;
 			3) sys_event_menu $1;;
+			4) process_performance_menu $1;;
 			6) break
 		esac 
 	done
@@ -81,6 +82,43 @@ function sys_event_menu {
 	done
 }
 
+function process_performance_menu {
+	while :
+	do
+		clear
+		echo "Associate LED with the performance of a process"
+		echo "-----------------------------------------------"
+		read -p "Please enter the name of the program to monitor(partial names are ok): " input
+		procname=$(ps | grep -i $input | awk '{ print $4 }' | sort | uniq)
+
+		if [ -z "$procname" ]
+		then
+			echo "ERROR: No match found"
+		elif [ "$(echo "$procname" | wc -l)" -gt 1 ]
+		then
+			echo "Name Conflict"
+			echo "-------------"
+			echo "I have detected a name conflict. Do you want to monitor:"
+			i=0
+			while read -r line
+			do
+				let "i++"
+				echo "$i) $line"
+				opt["$i"]=$line
+			done < <(echo "$procname")
+			let "i++"
+			echo "$i) Cancel Request"
+			read -p "Please select an option (1-$i): " input
+		case "$input" in
+				$i) break;;
+				*) procname=${opt[$input]}
+			esac
+		fi	
+		echo "$procname"
+		read -p "Do you wish to 1) monitor memory or 2) monitor cpu? [enter memory or cpu]: " input
+	done
+} 
+
 function turn_led_on {
 	sudo sh -c "echo 1 > $1/brightness"
 }
@@ -93,7 +131,8 @@ function trigger_event {
 	sudo sh -c "echo $2 > $1/trigger"
 }
 
-
+trap '' 2
 main_menu
+trap 2
 #led_menu "led0"
 #turn_led_off "led0"
