@@ -42,7 +42,7 @@ function led_menu {
 			2) turn_led_off $1;;
 			3) sys_event_menu $1;;
 			4) process_performance_menu $1;;
-			6) break
+			6) break;;
 		esac 
 	done
 }
@@ -111,11 +111,22 @@ function process_performance_menu {
 			read -p "Please select an option (1-$i): " input
 		case "$input" in
 				$i) break;;
-				*) procname=${opt[$input]}
+				*) procname=${opt[$input]};;
 			esac
 		fi	
 		echo "$procname"
 		read -p "Do you wish to 1) monitor memory or 2) monitor cpu? [enter memory or cpu]: " input
+		if [ "$input" == "memory" ]
+		then
+			monitor_memory $procname
+			break
+		elif [ "$input" == "cpu" ]
+		then
+			monitor_cpu $procname
+			break
+		else
+			echo "ERROR: Invalid input"
+		fi
 	done
 } 
 
@@ -129,6 +140,14 @@ function turn_led_off {
 
 function trigger_event {
 	sudo sh -c "echo $2 > $1/trigger"
+}
+
+function monitor_memory {
+	//monitor memory script
+}
+
+function monitor_cpu {
+	//#monitor cpu script
 }
 
 trap '' 2
