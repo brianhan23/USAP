@@ -75,7 +75,8 @@ function sys_event_menu {
 
 		read -p "Please select an option (1-$i): " input
 		case "$input" in
-			$i) break
+			$i) break;;
+			*) trigger_event $1 ${opt[$input]};;
 		esac	
 	done
 }
@@ -86,6 +87,10 @@ function turn_led_on {
 
 function turn_led_off {
 	sudo sh -c "echo 0 > $1/brightness"
+}
+
+function trigger_event {
+	sudo sh -c "echo $2 > $1/trigger"
 }
 
 
