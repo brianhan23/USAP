@@ -8,21 +8,19 @@ function main_menu {
 	for led in /sys/class/leds/*; do
 		let "i++"
 		echo "$i. $(basename "$led")"
+		opt["$i"]=$led
 	done
 	let "i++"
 	echo "$i. Quit"
 	read -p "Please enter a number (1-$i) for the led to configure or quit: " input
-	j=0
-	for led in /sys/class/leds/*; do
-                let "j++"
-		if (i==j); then
-			led_menu "$(basename "$led")"	
-		fi	
-        done
+	case "$input" in
+		$i) exit;;
+		*) led_menu ${opt[$input]};;
+	esac
 }
 
 function led_menu {
-	echo $1
+	echo "$(basename "$1")"
 	echo "=========="
 	echo "What would you like to do with this led?"
 	echo "1) turn on"
@@ -33,8 +31,8 @@ function led_menu {
 	echo "6) quit to main menu"
 	read -p "Please enter a number (1-6) for your choice:" input
 	case "$input" in
-		1) sudo sh -c "echo 1 > /sys/class/leds/$1/brightness";;
-		2) sudo sh -c "echo 0 > /sys/class/leds/$1/brightness";;
+		1) sudo sh -c "echo 1 > $1/brightness";;
+		2) sudo sh -c "echo 0 > $1/brightness";;
 		*) echo "Please enter a number (1-6) for your choice:" ;;
 	esac 
 }
