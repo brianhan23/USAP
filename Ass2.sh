@@ -1,29 +1,40 @@
 #!/bin/bash
 
+# Function declaration for the main menu
 function main_menu {
+	# Menu is inside of a loop, will refresh menu unless user quits
 	while :
 	do
 		clear
 		echo "Welcome to Led_Konfigurator!"
 		echo "============================"
 		echo "Please select an led to configure:"
+		# Loop through all leds in the leds directory, store the path
+		# to each led in an array with index equal to option menu number
 		i=0
 		for led in /sys/class/leds/*; do
 			let "i++"
+			# We strip the full path for dislay only
 			echo "$i. $(basename "$led")"
 			opt["$i"]=$led
 		done
 		let "i++"
 		echo "$i. Quit"
+		# Prompt user for input
 		read -p "Please enter a number (1-$i) for the led to configure or quit: " input
+		# Handle quit case first, we know the value.
+		# If the input is not in the range of inputs, report error
 		case "$input" in
 			$i) exit;;
-			*) led_menu ${opt[$input]};;
+			[1-$i]) led_menu ${opt[$input]};;
+			*) echo "ERROR: invalid input";;
 		esac
 	done
 }
 
+# Function declaration for the led menu
 function led_menu {
+	# Menu is inside of a loop, will refresh after user input
 	while :
 	do
 		clear
@@ -42,11 +53,14 @@ function led_menu {
 			2) turn_led_off $1;;
 			3) sys_event_menu $1;;
 			4) process_performance_menu $1;;
+			5) stop_process_performance $1;;
 			6) break;;
+			*) echo "ERROR: Invalid input";;
 		esac 
 	done
 }
 
+# Function declaration for the system event menu
 function sys_event_menu {
 	while :
 	do
@@ -55,13 +69,16 @@ function sys_event_menu {
 		echo "================================="
 		echo "Available events are:"
 		echo "---------------------"
+		# Read the leds trigger file and loop through line by line
 		read -r line < $1/trigger
 		page=""
 		i=0
                 for trigger in $line; do
                         let "i++"
+			# Check for square brackets
 			if [[ ${trigger:0:1} == '[' ]]
 			then
+				# Strip square brackets
 				trigger=${trigger#*[}
 				trigger=${trigger%]*}
 				page="$page$i) $trigger*"$'\n'
@@ -78,6 +95,7 @@ function sys_event_menu {
 		case "$input" in
 			$i) break;;
 			*) trigger_event $1 ${opt[$input]};;
+			*) echo "ERROR: Invalid input";;
 		esac	
 	done
 }
@@ -130,6 +148,7 @@ function process_performance_menu {
 	done
 } 
 
+# Functions to do actions
 function turn_led_on {
 	sudo sh -c "echo 1 > $1/brightness"
 }
@@ -143,15 +162,25 @@ function trigger_event {
 }
 
 function monitor_memory {
-	//monitor memory script
+	:
+	# monitor memory script
 }
 
 function monitor_cpu {
-	//#monitor cpu script
+	:
+	# monitor cpu script
 }
 
+function stop_process_performance {
+	:
+	# incomplete
+}
+
+# Disable control-c interrupt
 trap '' 2
+# Execute Main Menu
 main_menu
+# Enable control-c interrup
 trap 2
 #led_menu "led0"
 #turn_led_off "led0"
