@@ -107,22 +107,26 @@ function process_performance_menu {
 		echo "Associate LED with the performance of a process"
 		echo "-----------------------------------------------"
 		read -p "Please enter the name of the program to monitor(partial names are ok): " input
-		procname=$(ps | grep -i $input | awk '{ print $4 }' | sort | uniq)
+		# Get a list of processes, filter out calling bash scripts, sort, remove duplicates
+		procname=$(ps aux | grep -i $input | grep -v $$ | grep -v "grep" | grep -v "monitor_process.sh" | awk '{ print $11 }' | sort | uniq)
 
 		if [ -z "$procname" ]
 		then
 			echo "ERROR: No match found"
+			break
 		elif [ "$(echo "$procname" | wc -l)" -gt 1 ]
 		then
+			# If multiple lines detected, display menu
 			echo "Name Conflict"
 			echo "-------------"
 			echo "I have detected a name conflict. Do you want to monitor:"
 			i=0
+			# Loop through each option, stripping path name
 			while read -r line
 			do
 				let "i++"
-				echo "$i) $line"
-				opt["$i"]=$line
+				echo "$i) $(basename "$line")"
+				opt["$i"]=$(basename "$line")
 			done < <(echo "$procname")
 			let "i++"
 			echo "$i) Cancel Request"
@@ -132,15 +136,17 @@ function process_performance_menu {
 				*) procname=${opt[$input]};;
 			esac
 		fi	
+		procname=$(basename "$procname")
 		echo "$procname"
 		read -p "Do you wish to 1) monitor memory or 2) monitor cpu? [enter memory or cpu]: " input
+		# Prompt for memory or cpu and call appropriate function
 		if [ "$input" == "memory" ]
 		then
-			monitor_memory $procname
+			monitor_memory $procname $1
 			break
 		elif [ "$input" == "cpu" ]
 		then
-			monitor_cpu $procname
+			monitor_cpu $procname $1
 			break
 		else
 			echo "ERROR: Invalid input"
@@ -162,18 +168,18 @@ function trigger_event {
 }
 
 function monitor_memory {
-	:
 	# monitor memory script
+	./monitor_process.sh -p $1 -m memory -l $2 &
 }
 
 function monitor_cpu {
-	:
 	# monitor cpu script
+	./monitor_process.sh -p $1 -m cpu -l $2 &
 }
 
 function stop_process_performance {
-	:
-	# incomplete
+	# kill monitor
+	./monitor_process.sh -k &
 }
 
 # Disable control-c interrupt
