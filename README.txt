@@ -4,6 +4,7 @@ CONTENTS OF THIS FILE
  * Introduction
  * Requirements
  * Execution
+ * References
 
 # USAP
 USAP assignment2
@@ -24,3 +25,8 @@ Raspbian linux
 EXECUTION
 ------------
 To run this tool, execute Ass.sh from the command line as use the menus
+
+REFERENCES
+------------
+RMIT assignment/lab sheet
+http://wiki.bash-hackers.org/howto/getopts_tutorial
